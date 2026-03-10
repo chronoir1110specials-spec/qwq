@@ -1,0 +1,4 @@
+bootstrap_servers: "localhost:9092"
+topic: "live_events"
+live_id: "live_001"
+interval_seconds: 1.0

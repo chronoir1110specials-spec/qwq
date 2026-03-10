@@ -1,0 +1,250 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>抖音直播数据分析系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand-mark">抖</div>
+        <div class="brand-text">抖音直播数据分析系统</div>
+        <nav class="top-nav">
+          <a href="#" class="active">数据</a>
+          <a href="#">能力中心</a>
+          <a href="#">文档</a>
+          <a href="#">服务市场</a>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <input id="globalSearch" class="top-search" placeholder="搜索功能/直播间" />
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-group">
+          <div class="sidebar-title">菜单</div>
+          <a href="#" class="nav-item" data-page="overview">总览</a>
+          <a href="#" class="nav-item" data-page="operation">运营</a>
+          <a href="#" class="nav-item active" data-page="data">数据</a>
+          <a href="#" class="nav-item" data-page="setting">设置</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="page-overview" class="page hidden">
+          <section class="panel page-head">
+            <div>
+              <h1>系统总览</h1>
+              <p>展示平台运行状态、核心看板入口和近况提醒（前端演示）</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>运行状态</h2>
+              <span class="hint-text">每 5 秒自动模拟更新</span>
+            </div>
+            <div class="kpi-grid">
+              <div class="metric-card"><h3>在线直播间</h3><p id="ovLiveCount">-</p></div>
+              <div class="metric-card"><h3>实时任务</h3><p id="ovTaskCount">-</p></div>
+              <div class="metric-card"><h3>消息积压</h3><p id="ovLag">-</p></div>
+              <div class="metric-card"><h3>系统健康度</h3><p id="ovHealth">-</p></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>快捷入口</h2>
+            </div>
+            <div class="quick-grid">
+              <button class="quick-btn" data-jump="data">进入数据分析</button>
+              <button class="quick-btn" data-jump="operation">进入运营中心</button>
+              <button class="quick-btn" data-jump="setting">进入系统设置</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>最近提醒</h2>
+            </div>
+            <ul id="ovNoticeList" class="notice-list"></ul>
+          </section>
+        </section>
+
+        <section id="page-operation" class="page hidden">
+          <section class="panel page-head">
+            <div>
+              <h1>运营中心</h1>
+              <p>活动编排、排班看板和执行记录（前端演示）</p>
+            </div>
+            <div class="controls">
+              <button id="opAddPlanBtn">新增活动计划</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>活动计划</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>活动名称</th>
+                  <th>负责人</th>
+                  <th>开始时间</th>
+                  <th>预算</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="opPlanBody"></tbody>
+            </table>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>排班建议</h2>
+            </div>
+            <div id="opSchedule" class="schedule-grid"></div>
+          </section>
+        </section>
+
+        <section id="page-data" class="page">
+          <section class="panel page-head">
+            <div>
+              <h1>直播数据</h1>
+              <p>该页面保持真实接口模式：读取后端 API + SSE 实时流</p>
+            </div>
+          </section>
+
+          <section class="panel controls-panel">
+            <div class="controls">
+              <label for="liveId">直播间</label>
+              <select id="liveId">
+                <option value="live_001">live_001</option>
+                <option value="live_002">live_002</option>
+                <option value="live_003">live_003</option>
+              </select>
+              <button id="refreshBtn">刷新静态</button>
+              <button id="realtimeToggle">开启实时</button>
+              <span id="realtimeStatus" class="rt-status rt-off">实时未开启</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>核心指标</h2>
+              <span class="hint-text">按当前直播间显示</span>
+            </div>
+            <div class="kpi-grid">
+              <div class="metric-card"><h3>在线人数</h3><p id="kpiOnline">-</p></div>
+              <div class="metric-card"><h3>点赞总量</h3><p id="kpiLikes">-</p></div>
+              <div class="metric-card"><h3>礼物总量</h3><p id="kpiGifts">-</p></div>
+              <div class="metric-card"><h3>GMV/礼物金额</h3><p id="kpiGmv">-</p></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>趋势分析</h2>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <h3>流量趋势</h3>
+                <div id="trendChart" class="chart"></div>
+              </div>
+              <div class="chart-card">
+                <h3>互动趋势</h3>
+                <div id="heatmapChart" class="chart"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>转化与情感</h2>
+            <div class="chart-grid">
+              <div class="chart-card">
+                <h3>电商转化漏斗</h3>
+                <div id="funnelChart" class="chart"></div>
+              </div>
+              <div class="chart-card">
+                <h3>情感占比</h3>
+                <div id="sentimentChart" class="chart"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel table-layout">
+            <div class="table-card">
+              <h3>关键互动用户</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>用户</th>
+                    <th>评论</th>
+                    <th>点赞</th>
+                    <th>礼物</th>
+                    <th>分数</th>
+                  </tr>
+                </thead>
+                <tbody id="topUsersBody"></tbody>
+              </table>
+            </div>
+            <div class="table-card">
+              <h3>推荐结果示例（u0001）</h3>
+              <ul id="recommendList"></ul>
+            </div>
+          </section>
+        </section>
+
+        <section id="page-setting" class="page hidden">
+          <section class="panel page-head">
+            <div>
+              <h1>系统设置</h1>
+              <p>页面偏好、展示配置和演示开关（前端演示）</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <h2>显示配置</h2>
+            </div>
+            <div class="form-grid">
+              <label class="field">
+                <span>默认打开页面</span>
+                <select id="setDefaultPage">
+                  <option value="data">数据</option>
+                  <option value="overview">总览</option>
+                  <option value="operation">运营</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>布局密度</span>
+                <select id="setDensity">
+                  <option value="normal">标准</option>
+                  <option value="compact">紧凑</option>
+                </select>
+              </label>
+
+              <label class="field switch-field">
+                <span>进入数据页自动开启实时</span>
+                <input id="setAutoRealtime" type="checkbox" />
+              </label>
+            </div>
+            <div class="controls" style="margin-top: 10px">
+              <button id="setSaveBtn">保存设置</button>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

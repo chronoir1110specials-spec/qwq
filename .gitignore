@@ -1,0 +1,25 @@
+# virtual env
+.venv/
+.venv311/
+venv/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# packages / large local artifacts
+offline_wheels/
+
+# editor
+.vscode/
+.idea/
+
+# logs / temp
+*.log
+*.tmp
+
+# system
+.DS_Store
+Thumbs.db
