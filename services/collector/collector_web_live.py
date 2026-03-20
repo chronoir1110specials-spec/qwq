@@ -46,6 +46,27 @@ def resolve_web_live_source_dir(source_dir: str = "") -> Path:
     return (_root_dir() / "爬取" / "Tiktok-live").resolve()
 
 
+def _mini_racer_runtime() -> dict:
+    spec = importlib.util.find_spec("py_mini_racer")
+    if spec is None or not spec.origin:
+        return {"available": False, "reason": "py_mini_racer not installed"}
+
+    package_dir = Path(spec.origin).resolve().parent
+    required_files = [
+        package_dir / "snapshot_blob.bin",
+        package_dir / "icudtl.dat",
+        package_dir / "mini_racer.dll",
+    ]
+    missing = [path.name for path in required_files if not path.exists()]
+    if missing:
+        return {
+            "available": False,
+            "reason": f"py_mini_racer missing runtime files: {', '.join(missing)}",
+        }
+
+    return {"available": True, "reason": "", "path": str(package_dir)}
+
+
 def get_web_live_runtime(source_dir: str = "") -> dict:
     resolved = resolve_web_live_source_dir(source_dir)
     missing_dependencies = [
@@ -54,12 +75,21 @@ def get_web_live_runtime(source_dir: str = "") -> dict:
         if importlib.util.find_spec(module_name) is None
     ]
     signature_engines = []
+    signature_warnings = []
     if shutil.which("node"):
         signature_engines.append("node")
-    if importlib.util.find_spec("py_mini_racer") is not None:
+    mini_racer = _mini_racer_runtime()
+    if mini_racer["available"]:
         signature_engines.append("mini-racer")
+    elif importlib.util.find_spec("py_mini_racer") is not None:
+        signature_warnings.append(str(mini_racer["reason"]))
     if not signature_engines:
-        missing_dependencies.append("node or mini-racer")
+        if signature_warnings:
+            missing_dependencies.append(
+                f"node.js (mini-racer unavailable: {signature_warnings[0]})"
+            )
+        else:
+            missing_dependencies.append("node.js or mini-racer")
     required_files = [
         resolved / "sign.js",
         resolved / "protobuf" / "douyin.py",
@@ -73,6 +103,7 @@ def get_web_live_runtime(source_dir: str = "") -> dict:
         "missing_dependencies": missing_dependencies,
         "missing_files": missing_files,
         "signature_engines": signature_engines,
+        "signature_warnings": signature_warnings,
     }
 
 
