@@ -15,6 +15,7 @@ from .db import get_connection
 from .realtime_store import get_realtime_store
 from .recommend import recommend_for_user
 from .seed import init_and_seed
+from .web_collector import get_web_collector_bridge
 
 
 api_bp = Blueprint("api", __name__)
@@ -122,3 +123,71 @@ def realtime_stream(live_id: str):
             time.sleep(interval)
 
     return Response(event_stream(), mimetype="text/event-stream")
+
+
+@api_bp.route("/collector/web/snapshot", methods=["GET"])
+def web_collector_snapshot():
+    bridge = get_web_collector_bridge()
+    limit_events = max(1, min(int(request.args.get("limit_events", "20")), 80))
+    limit_logs = max(1, min(int(request.args.get("limit_logs", "30")), 120))
+    return jsonify(bridge.snapshot(limit_events=limit_events, limit_logs=limit_logs))
+
+
+@api_bp.route("/collector/web/analytics/<live_id>", methods=["GET"])
+def web_collector_analytics(live_id: str):
+    bridge = get_web_collector_bridge()
+    max_points = max(6, min(int(request.args.get("limit", "30")), 120))
+    data = bridge.analytics(live_id=live_id, max_points=max_points)
+    if not data:
+        return jsonify({"error": "collector analytics not available"}), 404
+    return jsonify(data)
+
+
+@api_bp.route("/collector/web/inspect", methods=["GET"])
+def web_collector_inspect():
+    bridge = get_web_collector_bridge()
+    live_id = request.args.get("live_id", "live_001").strip() or "live_001"
+    web_rid = request.args.get("web_rid", "").strip()
+    if not web_rid:
+        return jsonify({"ok": False, "error": "web_rid is required"}), 400
+    try:
+        room_info = bridge.inspect_room(live_id=live_id, web_rid=web_rid)
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc), "snapshot": bridge.snapshot()}), 503
+    return jsonify({"ok": True, "room": room_info, "snapshot": bridge.snapshot()})
+
+
+@api_bp.route("/collector/web/audience", methods=["GET"])
+def web_collector_audience():
+    bridge = get_web_collector_bridge()
+    live_id = request.args.get("live_id", "live_001").strip() or "live_001"
+    web_rid = request.args.get("web_rid", "").strip()
+    anchor_id = request.args.get("anchor_id", "").strip()
+    if not web_rid or not anchor_id:
+        return jsonify({"ok": False, "error": "web_rid and anchor_id are required"}), 400
+    try:
+        audience = bridge.inspect_audience(live_id=live_id, web_rid=web_rid, anchor_id=anchor_id)
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc), "snapshot": bridge.snapshot()}), 503
+    return jsonify({"ok": True, "items": audience, "snapshot": bridge.snapshot()})
+
+
+@api_bp.route("/collector/web/start", methods=["POST"])
+def web_collector_start():
+    bridge = get_web_collector_bridge()
+    payload = request.get_json(silent=True) or {}
+    live_id = str(payload.get("live_id", "live_001")).strip() or "live_001"
+    web_rid = str(payload.get("web_rid", "")).strip()
+    anchor_id = str(payload.get("anchor_id", "")).strip()
+    if not web_rid:
+        return jsonify({"ok": False, "error": "web_rid is required"}), 400
+    result = bridge.start(live_id=live_id, web_rid=web_rid, anchor_id=anchor_id)
+    if not result.get("ok"):
+        return jsonify(result), 503
+    return jsonify(result)
+
+
+@api_bp.route("/collector/web/stop", methods=["POST"])
+def web_collector_stop():
+    bridge = get_web_collector_bridge()
+    return jsonify(bridge.stop())

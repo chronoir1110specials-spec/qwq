@@ -2,3 +2,7 @@ flask==3.0.3
 flask-cors==4.0.1
 kafka-python==2.0.2
 pytest==8.3.2
+requests==2.31.0
+websocket-client==1.7.0
+betterproto==2.0.0b6
+mini-racer==0.12.4

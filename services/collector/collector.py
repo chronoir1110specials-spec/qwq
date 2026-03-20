@@ -1,98 +1,90 @@
+"""Collector entrypoint for simulated, official push, and web-live adapters."""
+
 import argparse
-import json
-import random
-import time
-from datetime import datetime, timezone
-from pathlib import Path
 
-from kafka import KafkaProducer
+from collector_common import EventPublisher
+from collector_official_push import run_official_push_server
+from collector_simulated import run_simulated
+from collector_web_live import run_web_live
 
 
-EVENT_TYPES = [
-    "enter",
-    "leave",
-    "like",
-    "gift",
-    "comment",
-    "product_click",
-    "purchase",
-]
-
-COMMENTS = [
-    "主播讲得好",
-    "这款不错",
-    "价格有点高",
-    "发货快吗",
-    "支持一下",
-    "先加购",
-]
-
-
-def generate_event(live_id: str, rng: random.Random) -> dict:
-    event_type = rng.choice(EVENT_TYPES)
-    return {
-        "event_time": datetime.now(timezone.utc).isoformat(),
-        "live_id": live_id,
-        "user_id": f"u{rng.randint(1, 5000):04d}",
-        "event_type": event_type,
-        "online_users": rng.randint(3000, 15000),
-        "like_count": rng.randint(0, 10),
-        "gift_value": round(rng.uniform(0, 120), 2) if event_type == "gift" else 0.0,
-        "product_id": f"p{rng.randint(1000, 1020)}" if event_type in ("product_click", "purchase") else "",
-        "product_action": event_type if event_type in ("product_click", "purchase") else "",
-        "comment": rng.choice(COMMENTS) if event_type == "comment" else "",
-    }
-
-
-def append_local(event: dict):
-    output = Path("data/raw_events.jsonl")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(event, ensure_ascii=False) + "\n")
-
-
-def _build_rng(live_id: str, seed: int | None) -> random.Random:
-    live_bias = sum(ord(ch) for ch in live_id)
-    if seed is None:
-        return random.Random(time.time_ns() + live_bias)
-    return random.Random(seed + live_bias)
-
-
-def run(bootstrap: str, topic: str, live_id: str, interval: float, seed: int | None):
-    rng = _build_rng(live_id, seed)
-    producer = None
-    try:
-        producer = KafkaProducer(
-            bootstrap_servers=bootstrap,
-            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-        )
-        print(f"[collector] connected kafka={bootstrap}, topic={topic}")
-    except Exception as exc:
-        print(f"[collector] kafka unavailable, fallback local file. reason={exc}")
-
-    while True:
-        event = generate_event(live_id, rng)
-        if producer is not None:
-            try:
-                producer.send(topic, event)
-            except Exception as exc:
-                print(f"[collector] send failed, write local. reason={exc}")
-                append_local(event)
-        else:
-            append_local(event)
-        print(f"[collector] {event['event_type']} user={event['user_id']}")
-        time.sleep(interval)
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Douyin live event collector (MVP)")
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Douyin live interaction event adapter (simulate + official-push + web-live)"
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["simulate", "official-push", "web-live"],
+        default="simulate",
+        help="simulate: local demo events, official-push: webhook receiver skeleton, web-live: web websocket adapter",
+    )
     parser.add_argument("--bootstrap", default="localhost:9092")
     parser.add_argument("--topic", default="live_events")
     parser.add_argument("--live-id", default="live_001")
+    parser.add_argument(
+        "--web-rid",
+        default="",
+        help="Douyin web live room id from https://live.douyin.com/<web_rid>",
+    )
     parser.add_argument("--interval", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument(
+        "--config",
+        default="",
+        help="Optional YAML config path for official push room bindings",
+    )
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=9100)
+    parser.add_argument("--webhook-path", default="/webhook/douyin/live")
+    parser.add_argument(
+        "--web-source-dir",
+        default="",
+        help="Optional path to the Tiktok-live source directory used by web-live mode",
+    )
+    parser.add_argument(
+        "--verification-token",
+        default="",
+        help="Optional shared token expected in X-Collector-Token or ?token=",
+    )
+    return parser
+
+
+def main():
+    parser = build_parser()
     args = parser.parse_args()
-    run(args.bootstrap, args.topic, args.live_id, args.interval, args.seed)
+
+    publisher = EventPublisher(args.bootstrap, args.topic)
+    try:
+        if args.mode == "simulate":
+            run_simulated(
+                publisher=publisher,
+                live_id=args.live_id,
+                interval=args.interval,
+                seed=args.seed,
+            )
+            return
+
+        if args.mode == "web-live":
+            web_rid = args.web_rid or args.live_id
+            run_web_live(
+                publisher=publisher,
+                live_id=args.live_id,
+                web_rid=web_rid,
+                source_dir=args.web_source_dir,
+            )
+            return
+
+        run_official_push_server(
+            publisher=publisher,
+            config_path=args.config,
+            fallback_live_id=args.live_id,
+            host=args.host,
+            port=args.port,
+            webhook_path=args.webhook_path,
+            verification_token=args.verification_token,
+        )
+    finally:
+        publisher.close()
 
 
 if __name__ == "__main__":

@@ -11,6 +11,10 @@ __pycache__/
 
 # packages / large local artifacts
 offline_wheels/
+dist/
+docker_images_offline.tar
+*_复现包.zip
+douyin_live_analytics_source_bundle_*.zip
 
 # editor
 .vscode/

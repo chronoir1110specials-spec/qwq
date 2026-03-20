@@ -1,4 +1,18 @@
 bootstrap_servers: "localhost:9092"
 topic: "live_events"
-live_id: "live_001"
-interval_seconds: 1.0
+
+simulate:
+  live_id: "live_001"
+  interval_seconds: 1.0
+
+official_push:
+  bind_host: "0.0.0.0"
+  bind_port: 9100
+  webhook_path: "/webhook/douyin/live"
+  verification_token: ""
+  bindings:
+    - live_id: "live_001"
+      room_id: "544590831076"
+      anchor_id: "138960285477659"
+      anchor_open_id: ""
+      account: ""

@@ -1,26 +1,33 @@
-# System Architecture Notes
+# 系统架构说明
 
-## Data Flow
+## 数据链路
 
-1. Collector captures public live data events.
-2. Events are published to Kafka topic `live_events`.
-3. Flink consumes Kafka stream and computes near real-time indicators:
-   - online users
-   - gift frequency
-   - interaction frequency
-4. Spark runs periodic offline jobs:
-   - user watch duration
-   - conversion-related aggregates
-5. Hive stores layered warehouse data:
-   - ODS raw events
-   - DWD cleaned detail
-   - DWS aggregated subject metrics
-6. Flask API serves business indicators to frontend dashboard.
+1. 数据接入层负责接收直播互动数据，并统一转换为系统内部事件结构。
+2. 当前演示环境使用 `services/collector` 生成模拟事件流，生产场景可替换为抖音开放平台直播互动能力提供的官方推送数据。
+3. 结构化事件写入 Kafka 主题 `live_events`。
+4. Flink 消费 Kafka 流并计算近实时指标：
+   - 在线人数
+   - 点赞次数
+   - 礼物次数与礼物金额
+   - 互动事件数
+5. Spark 执行离线计算任务：
+   - 用户观看时长
+   - 互动与转化聚合结果
+6. Hive 用于扩展分层数仓存储：
+   - ODS 原始层
+   - DWD 明细层
+   - DWS 主题汇总层
+7. Flask API 对外提供业务指标与实时接口，前端通过 HTTP 和 SSE 展示数据看板。
 
-## Core Modules
+## 核心模块
 
-- Data collection: `services/collector`
-- Stream compute: `services/flink_job`
-- Batch compute: `services/spark_job`
-- API service: `apps/backend`
-- Visualization: `apps/frontend`
+- 数据接入与适配：`services/collector`
+- 实时计算：`services/flink_job`
+- 离线计算：`services/spark_job`
+- API 服务：`apps/backend`
+- 可视化展示：`apps/frontend`
+
+## 接入说明
+
+- 当前仓库默认提供的是演示级模拟数据适配器，用于验证 Kafka、Flink、后端接口和前端看板的完整链路。
+- 如果后续要接入真实直播间，应优先采用抖音开放平台直播互动能力的官方推送机制，在接入层完成字段映射后复用现有的实时计算和可视化模块。

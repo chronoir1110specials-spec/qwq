@@ -13,10 +13,10 @@
         <div class="brand-mark">抖</div>
         <div class="brand-text">抖音直播数据分析系统</div>
         <nav class="top-nav">
-          <a href="#" class="active">数据</a>
-          <a href="#">能力中心</a>
-          <a href="#">文档</a>
-          <a href="#">服务市场</a>
+          <a href="#" class="top-nav-item active" data-top-page="data">数据</a>
+          <a href="#" class="top-nav-item" data-top-page="ability">能力中心</a>
+          <a href="#" class="top-nav-item" data-top-page="docs">文档</a>
+          <a href="#" class="top-nav-item" data-top-page="market">服务市场</a>
         </nav>
       </div>
       <div class="topbar-right">
@@ -24,224 +24,447 @@
       </div>
     </header>
 
-    <div class="shell">
-      <aside class="sidebar">
-        <div class="sidebar-group">
-          <div class="sidebar-title">菜单</div>
-          <a href="#" class="nav-item" data-page="overview">总览</a>
-          <a href="#" class="nav-item" data-page="operation">运营</a>
-          <a href="#" class="nav-item active" data-page="data">数据</a>
-          <a href="#" class="nav-item" data-page="setting">设置</a>
-        </div>
-      </aside>
+    <section id="top-page-data" class="top-page">
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="sidebar-group">
+            <div class="sidebar-title">菜单</div>
+            <a href="#" class="nav-item" data-page="overview">总览</a>
+            <a href="#" class="nav-item" data-page="operation">运营</a>
+            <a href="#" class="nav-item active" data-page="data">数据</a>
+            <a href="#" class="nav-item" data-page="setting">设置</a>
+          </div>
+        </aside>
 
-      <main class="main">
-        <section id="page-overview" class="page hidden">
-          <section class="panel page-head">
-            <div>
-              <h1>系统总览</h1>
-              <p>展示平台运行状态、核心看板入口和近况提醒（前端演示）</p>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>运行状态</h2>
-              <span class="hint-text">每 5 秒自动模拟更新</span>
-            </div>
-            <div class="kpi-grid">
-              <div class="metric-card"><h3>在线直播间</h3><p id="ovLiveCount">-</p></div>
-              <div class="metric-card"><h3>实时任务</h3><p id="ovTaskCount">-</p></div>
-              <div class="metric-card"><h3>消息积压</h3><p id="ovLag">-</p></div>
-              <div class="metric-card"><h3>系统健康度</h3><p id="ovHealth">-</p></div>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>快捷入口</h2>
-            </div>
-            <div class="quick-grid">
-              <button class="quick-btn" data-jump="data">进入数据分析</button>
-              <button class="quick-btn" data-jump="operation">进入运营中心</button>
-              <button class="quick-btn" data-jump="setting">进入系统设置</button>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>最近提醒</h2>
-            </div>
-            <ul id="ovNoticeList" class="notice-list"></ul>
-          </section>
-        </section>
-
-        <section id="page-operation" class="page hidden">
-          <section class="panel page-head">
-            <div>
-              <h1>运营中心</h1>
-              <p>活动编排、排班看板和执行记录（前端演示）</p>
-            </div>
-            <div class="controls">
-              <button id="opAddPlanBtn">新增活动计划</button>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>活动计划</h2>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>活动名称</th>
-                  <th>负责人</th>
-                  <th>开始时间</th>
-                  <th>预算</th>
-                  <th>状态</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="opPlanBody"></tbody>
-            </table>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>排班建议</h2>
-            </div>
-            <div id="opSchedule" class="schedule-grid"></div>
-          </section>
-        </section>
-
-        <section id="page-data" class="page">
-          <section class="panel page-head">
-            <div>
-              <h1>直播数据</h1>
-              <p>该页面保持真实接口模式：读取后端 API + SSE 实时流</p>
-            </div>
-          </section>
-
-          <section class="panel controls-panel">
-            <div class="controls">
-              <label for="liveId">直播间</label>
-              <select id="liveId">
-                <option value="live_001">live_001</option>
-                <option value="live_002">live_002</option>
-                <option value="live_003">live_003</option>
-              </select>
-              <button id="refreshBtn">刷新静态</button>
-              <button id="realtimeToggle">开启实时</button>
-              <span id="realtimeStatus" class="rt-status rt-off">实时未开启</span>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>核心指标</h2>
-              <span class="hint-text">按当前直播间显示</span>
-            </div>
-            <div class="kpi-grid">
-              <div class="metric-card"><h3>在线人数</h3><p id="kpiOnline">-</p></div>
-              <div class="metric-card"><h3>点赞总量</h3><p id="kpiLikes">-</p></div>
-              <div class="metric-card"><h3>礼物总量</h3><p id="kpiGifts">-</p></div>
-              <div class="metric-card"><h3>GMV/礼物金额</h3><p id="kpiGmv">-</p></div>
-            </div>
-          </section>
-
-          <section class="panel">
-            <h2>趋势分析</h2>
-            <div class="chart-grid">
-              <div class="chart-card">
-                <h3>流量趋势</h3>
-                <div id="trendChart" class="chart"></div>
+        <main class="main">
+          <section id="page-overview" class="page hidden">
+            <section class="panel page-head">
+              <div>
+                <h1>系统总览</h1>
+                <p>展示平台运行状态、核心看板入口和近况提醒（前端演示）</p>
               </div>
-              <div class="chart-card">
-                <h3>互动趋势</h3>
-                <div id="heatmapChart" class="chart"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>运行状态</h2>
+                <span class="hint-text">每 5 秒自动模拟更新</span>
               </div>
-            </div>
+              <div class="kpi-grid">
+                <div class="metric-card"><h3>在线直播间</h3><p id="ovLiveCount">-</p></div>
+                <div class="metric-card"><h3>实时任务</h3><p id="ovTaskCount">-</p></div>
+                <div class="metric-card"><h3>消息积压</h3><p id="ovLag">-</p></div>
+                <div class="metric-card"><h3>系统健康度</h3><p id="ovHealth">-</p></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>快捷入口</h2>
+              </div>
+              <div class="quick-grid">
+                <button class="quick-btn" data-jump="data">进入数据分析</button>
+                <button class="quick-btn" data-jump="operation">进入运营中心</button>
+                <button class="quick-btn" data-jump="setting">进入系统设置</button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>最近提醒</h2>
+              </div>
+              <ul id="ovNoticeList" class="notice-list"></ul>
+            </section>
           </section>
 
-          <section class="panel">
-            <h2>转化与情感</h2>
-            <div class="chart-grid">
-              <div class="chart-card">
-                <h3>电商转化漏斗</h3>
-                <div id="funnelChart" class="chart"></div>
+          <section id="page-operation" class="page hidden">
+            <section class="panel page-head">
+              <div>
+                <h1>运营中心</h1>
+                <p>活动编排、排班看板和执行记录（前端演示）</p>
               </div>
-              <div class="chart-card">
-                <h3>情感占比</h3>
-                <div id="sentimentChart" class="chart"></div>
+              <div class="controls">
+                <button id="opAddPlanBtn">新增活动计划</button>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section class="panel table-layout">
-            <div class="table-card">
-              <h3>关键互动用户</h3>
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>活动计划</h2>
+              </div>
               <table>
                 <thead>
                   <tr>
-                    <th>用户</th>
-                    <th>评论</th>
-                    <th>点赞</th>
-                    <th>礼物</th>
-                    <th>分数</th>
+                    <th>活动名称</th>
+                    <th>负责人</th>
+                    <th>开始时间</th>
+                    <th>预算</th>
+                    <th>状态</th>
+                    <th>操作</th>
                   </tr>
                 </thead>
-                <tbody id="topUsersBody"></tbody>
+                <tbody id="opPlanBody"></tbody>
               </table>
-            </div>
-            <div class="table-card">
-              <h3>推荐结果示例（u0001）</h3>
-              <ul id="recommendList"></ul>
-            </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>排班建议</h2>
+              </div>
+              <div id="opSchedule" class="schedule-grid"></div>
+            </section>
           </section>
+
+          <section id="page-data" class="page">
+            <section class="panel page-head">
+              <div>
+                <h1>直播数据</h1>
+                <p>该页面保持真实接口模式：读取后端 API + SSE 实时流，可平滑对接官方直播互动推送数据</p>
+              </div>
+            </section>
+
+            <section class="panel controls-panel">
+              <div class="controls">
+                <label for="liveId">直播间</label>
+                <select id="liveId">
+                  <option value="live_001">live_001</option>
+                  <option value="live_002">live_002</option>
+                  <option value="live_003">live_003</option>
+                </select>
+                <button id="refreshBtn">刷新静态</button>
+                <button id="realtimeToggle">开启实时</button>
+                <span id="realtimeStatus" class="rt-status rt-off">实时未开启</span>
+              </div>
+            </section>
+
+            <section class="panel collector-panel">
+              <div class="panel-title-row">
+                <div>
+                  <h2>网页直播采集接入</h2>
+                  <div class="hint-text">基于 `live.douyin.com` 网页直播协议的实验接入，支持查询状态、拉取观众榜、启动/停止采集</div>
+                </div>
+                <span id="collectorStatus" class="rt-status rt-off">未启动</span>
+              </div>
+
+              <div class="collector-layout">
+                <div class="collector-control-card">
+                  <div class="collector-live-badge">
+                    当前接入到系统的内部 live_id：
+                    <strong id="collectorPipelineLiveId">live_001</strong>
+                  </div>
+
+                  <div class="form-grid collector-form-grid">
+                    <label class="field">
+                      <span>抖音 Web RID</span>
+                      <input id="collectorWebRid" type="text" placeholder="例如：261378947940" />
+                    </label>
+                    <label class="field">
+                      <span>主播 ID</span>
+                      <input id="collectorAnchorId" type="text" placeholder="用于查询观众榜，可选" />
+                    </label>
+                  </div>
+
+                  <div class="controls">
+                    <button id="collectorInspectBtn">查询直播状态</button>
+                    <button id="collectorAudienceBtn" class="secondary-btn">查询观众榜</button>
+                    <button id="collectorStartBtn">启动网页采集</button>
+                    <button id="collectorStopBtn" class="secondary-btn">停止采集</button>
+                  </div>
+
+                  <div class="collector-status-grid">
+                    <div class="status-card">
+                      <h3>运行依赖</h3>
+                      <p id="collectorRuntimeText">检测中</p>
+                    </div>
+                    <div class="status-card">
+                      <h3>真实 room_id</h3>
+                      <p id="collectorRoomId">-</p>
+                    </div>
+                    <div class="status-card">
+                      <h3>主播状态</h3>
+                      <p id="collectorAnchorText">-</p>
+                    </div>
+                    <div class="status-card">
+                      <h3>累计事件</h3>
+                      <p id="collectorEventTotal">0</p>
+                    </div>
+                    <div class="status-card">
+                      <h3>当前在线</h3>
+                      <p id="collectorCurrentOnline">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="collector-log-card">
+                  <div class="panel-title-row">
+                    <h3>最近日志</h3>
+                    <span class="hint-text">接口探测 / WebSocket 连接 / 错误信息</span>
+                  </div>
+                  <ul id="collectorLogList" class="collector-log-list">
+                    <li class="collector-empty">暂无日志</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="collector-bottom-grid">
+                <div class="table-card">
+                  <div class="panel-title-row">
+                    <h3>观众榜</h3>
+                    <span class="hint-text">固定显示前 30 名</span>
+                  </div>
+                  <div class="collector-table-scroll collector-audience-scroll">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>排名</th>
+                          <th>用户 ID</th>
+                          <th>昵称</th>
+                          <th>抖音号</th>
+                        </tr>
+                      </thead>
+                      <tbody id="collectorAudienceBody">
+                        <tr><td colspan="4" class="collector-empty-cell">暂无数据</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="table-card">
+                  <div class="panel-title-row">
+                    <h3>最近事件</h3>
+                    <span class="hint-text">评论 / 点赞 / 礼物 / 入场 / 统计消息</span>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>时间</th>
+                        <th>类型</th>
+                        <th>用户</th>
+                        <th>内容</th>
+                      </tr>
+                    </thead>
+                    <tbody id="collectorEventBody">
+                      <tr><td colspan="4" class="collector-empty-cell">暂无事件</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>核心指标</h2>
+                <span id="dashboardSourceHint" class="hint-text">按当前直播间显示</span>
+              </div>
+              <div class="kpi-grid">
+                <div class="metric-card"><h3>在线人数</h3><p id="kpiOnline">-</p></div>
+                <div class="metric-card"><h3>点赞总量</h3><p id="kpiLikes">-</p></div>
+                <div class="metric-card"><h3>礼物总量</h3><p id="kpiGifts">-</p></div>
+                <div class="metric-card"><h3>GMV/礼物金额</h3><p id="kpiGmv">-</p></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h2>趋势分析</h2>
+              <div class="chart-grid">
+                <div class="chart-card">
+                  <h3 id="trendCardTitle">流量趋势</h3>
+                  <div id="trendChart" class="chart"></div>
+                </div>
+                <div class="chart-card">
+                  <h3 id="heatmapCardTitle">互动趋势</h3>
+                  <div id="heatmapChart" class="chart"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <h2>转化与情感</h2>
+              <div class="chart-grid">
+                <div class="chart-card">
+                  <h3 id="funnelCardTitle">电商转化漏斗</h3>
+                  <div id="funnelChart" class="chart"></div>
+                </div>
+                <div class="chart-card">
+                  <h3 id="sentimentCardTitle">情感占比</h3>
+                  <div id="sentimentChart" class="chart"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel table-layout">
+              <div class="table-card">
+                <h3 id="topUsersCardTitle">关键互动用户</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>用户</th>
+                      <th>评论</th>
+                      <th>点赞</th>
+                      <th>礼物</th>
+                      <th>分数</th>
+                    </tr>
+                  </thead>
+                  <tbody id="topUsersBody"></tbody>
+                </table>
+              </div>
+              <div class="table-card">
+                <h3 id="secondaryListTitle">推荐结果示例（u0001）</h3>
+                <ul id="recommendList"></ul>
+              </div>
+            </section>
+          </section>
+
+          <section id="page-setting" class="page hidden">
+            <section class="panel page-head">
+              <div>
+                <h1>系统设置</h1>
+                <p>页面偏好、展示配置和演示开关（前端演示）</p>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title-row">
+                <h2>显示配置</h2>
+              </div>
+              <div class="form-grid">
+                <label class="field">
+                  <span>默认打开页面</span>
+                  <select id="setDefaultPage">
+                    <option value="data">数据</option>
+                    <option value="overview">总览</option>
+                    <option value="operation">运营</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>布局密度</span>
+                  <select id="setDensity">
+                    <option value="normal">标准</option>
+                    <option value="compact">紧凑</option>
+                  </select>
+                </label>
+
+                <label class="field switch-field">
+                  <span>进入数据页自动开启实时</span>
+                  <input id="setAutoRealtime" type="checkbox" />
+                </label>
+              </div>
+              <div class="controls" style="margin-top: 10px">
+                <button id="setSaveBtn">保存设置</button>
+              </div>
+            </section>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <section id="top-page-ability" class="top-page hidden">
+      <main class="top-main">
+        <section class="panel page-head">
+          <div>
+            <h1>能力中心</h1>
+            <p>面向直播互动分析的能力展示页，支持与官方开放平台直播数据能力对接</p>
+          </div>
         </section>
 
-        <section id="page-setting" class="page hidden">
-          <section class="panel page-head">
-            <div>
-              <h1>系统设置</h1>
-              <p>页面偏好、展示配置和演示开关（前端演示）</p>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-title-row">
-              <h2>显示配置</h2>
-            </div>
-            <div class="form-grid">
-              <label class="field">
-                <span>默认打开页面</span>
-                <select id="setDefaultPage">
-                  <option value="data">数据</option>
-                  <option value="overview">总览</option>
-                  <option value="operation">运营</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span>布局密度</span>
-                <select id="setDensity">
-                  <option value="normal">标准</option>
-                  <option value="compact">紧凑</option>
-                </select>
-              </label>
-
-              <label class="field switch-field">
-                <span>进入数据页自动开启实时</span>
-                <input id="setAutoRealtime" type="checkbox" />
-              </label>
-            </div>
-            <div class="controls" style="margin-top: 10px">
-              <button id="setSaveBtn">保存设置</button>
-            </div>
-          </section>
+        <section class="panel">
+          <div class="panel-title-row">
+            <h2>核心能力</h2>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <h3>弹幕情感识别</h3>
+              <p>支持对直播评论消息进行正向、中性、负向三分类，用于情绪波动监控。</p>
+              <span class="feature-tag">实时</span>
+            </article>
+            <article class="feature-card">
+              <h3>互动用户识别</h3>
+              <p>基于评论、点赞、礼物等互动事件综合打分，识别关键互动用户。</p>
+              <span class="feature-tag">分析</span>
+            </article>
+            <article class="feature-card">
+              <h3>兴趣推荐引擎</h3>
+              <p>结合用户标签、互动偏好和商品特征，输出推荐商品列表。</p>
+              <span class="feature-tag">推荐</span>
+            </article>
+            <article class="feature-card">
+              <h3>转化漏斗分析</h3>
+              <p>围绕曝光、点击、加购和购买环节构建转化漏斗，定位流失节点。</p>
+              <span class="feature-tag">电商</span>
+            </article>
+          </div>
         </section>
       </main>
-    </div>
+    </section>
+
+    <section id="top-page-docs" class="top-page hidden">
+      <main class="top-main">
+        <section class="panel page-head">
+          <div>
+            <h1>文档</h1>
+            <p>系统使用手册、开放平台接入说明、接口说明与部署文档</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title-row">
+            <h2>文档目录</h2>
+          </div>
+          <div class="docs-grid">
+            <div class="doc-card">
+              <h3>快速开始</h3>
+              <p>从环境准备、离线镜像导入到本地一键启动的完整流程。</p>
+              <a href="#">查看文档</a>
+            </div>
+            <div class="doc-card">
+              <h3>接口总览</h3>
+              <p>包含实时指标接口、分析接口以及 SSE 实时推送接口示例。</p>
+              <a href="#">查看文档</a>
+            </div>
+            <div class="doc-card">
+              <h3>实时链路说明</h3>
+              <p>官方互动推送适配层/模拟采集器 -> Kafka -> Flink -> 后端 -> 前端的流转说明。</p>
+              <a href="#">查看文档</a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <section id="top-page-market" class="top-page hidden">
+      <main class="top-main">
+        <section class="panel page-head">
+          <div>
+            <h1>服务市场</h1>
+            <p>展示可扩展插件与服务能力（前端演示）</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title-row">
+            <h2>可选服务</h2>
+          </div>
+          <div class="market-grid">
+            <article class="market-card">
+              <h3>直播话术优化包</h3>
+              <p>根据弹幕语义生成实时话术建议。</p>
+              <button class="quick-btn">试用</button>
+            </article>
+            <article class="market-card">
+              <h3>电商归因增强包</h3>
+              <p>补充多触点归因模型，提高转化分析准确度。</p>
+              <button class="quick-btn">试用</button>
+            </article>
+            <article class="market-card">
+              <h3>私域用户沉淀包</h3>
+              <p>识别高潜用户并生成后续触达策略。</p>
+              <button class="quick-btn">试用</button>
+            </article>
+          </div>
+        </section>
+      </main>
+    </section>
 
     <div id="toastContainer" class="toast-container"></div>
 
